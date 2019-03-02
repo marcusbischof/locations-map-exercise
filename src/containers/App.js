@@ -5,9 +5,6 @@ import ReactDOMServer from 'react-dom/server';
 // New library that I'm testing.
 import { withScriptjs, withGoogleMap, GoogleMap, Marker, InfoWindow} from 'react-google-maps';
 import { compose } from "recompose";
-
-// Google maps wrapper that makes it easy to overlay components on top of google map.
-import GoogleMapReact from 'google-map-react';
 import Geocode from "react-geocode";
 
 // Styled components.
@@ -16,21 +13,16 @@ import styled from 'styled-components';
 import { fetchLocations } from '../helpers/api';
 
 const api_key = '';
-const MarcusTestingComponent = ({ text }) => <div>{text}</div>;
 
-// name, address, an image, and hours if present in response
-// to be continued...
+// TODO: Add addtional marker meta-data, when it does exist (images, hours, etc.)
 const AddtionalMarkerContextDisplay = (props) => {
-  console.log('Addtional marker context display is rendering....')
-  console.log(props)
   return (
     props.display_context_window ?
       <span>
         {
-
           props.markers.map(marker => {
             if (marker.id == props.context_window_marker_id) {
-              return 'YOOO' + marker.id.toString()
+              return 'ID of selected marker: ' + marker.id.toString()
             }
           })
         }
@@ -39,9 +31,9 @@ const AddtionalMarkerContextDisplay = (props) => {
   )
 }
 
+// Component displaying our google map along with the restaurant pins.
 const MyMapComponent = compose(withScriptjs, withGoogleMap)(props => {
-
-    // to continue .. https://github.com/fullstackreact/google-maps-react/blob/master/README.md
+    // Documentation on InfoWindow: https://github.com/fullstackreact/google-maps-react/blob/master/README.md
     return (
       <GoogleMap defaultZoom={4} defaultCenter={{ lat: 41.850033, lng: -87.650052 }}>
           {props.markers.map(marker => {
@@ -71,18 +63,14 @@ class App extends React.Component {
 
   constructor(props) {
     super(props)
+    // display_context_window is set to true after the first addtional context
+    // button is selected.
     this.state = {
       markers : [],
       display_context_window : false,
       context_window_marker_id : 1,
       markers_loaded : false
     };
-  }
-
-  componentWillUpdate(nextProps, nextState) {
-  }
-
-  componentDidUpdate(prevProps, prevState) {
   }
 
   geocode_addresses() {
@@ -131,9 +119,9 @@ class App extends React.Component {
     comp.setState(obj);
   }
 
+  // When a button in an info window is clicked, we display addtional context
+  // for the selected restaurant.
   change_marker_context_display(marker_id, child_set_state, component) {
-    console.log('in change marker context display')
-    console.log(marker_id)
     child_set_state(
       {
         'display_context_window' : true,
@@ -143,6 +131,7 @@ class App extends React.Component {
     )
   }
 
+  // Open an info window by selecting marker, close it by selecting x button top right.
   open_or_close_info_window(marker_id, child_set_state, markers, component, open) {
     for (let i = 0 ; i < markers.length ; i++) {
       if (markers[i].id == marker_id) {
